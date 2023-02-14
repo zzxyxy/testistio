@@ -1,0 +1,39 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    chart: grafana
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 6.44.8
+    helm:
+      releaseName: grafana
+      parameters:
+      - name: ingress.enabled
+        value: "true"
+      - name: ingress.hosts[0]
+        value: grafana.monitoring.zxyxyhome.duckdns.org
+      - name: persistence.enabled
+        value: "true"
+      - name: persistence.storageClassName
+        value: grafana
+      - name: persistence.size
+        value: "20Gi"
+      - name: persistence.accessModes[0]
+        value: ReadWriteOnce
+      - name: initChownData.enabled
+        value: "false"
+  destination:
+    namespace: monitoring
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+    - CreateNamespace=true
